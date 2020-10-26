@@ -10,6 +10,7 @@ def mutacionar(rota_celula_mae):
     nova_rota = list(rota_celula_mae)
     num_trocas = random.randint(1, int(len(rota_celula_mae) * 0.05))
     selecao = random.choices(rota_celula_mae, k=(2 * num_trocas))
+
     for contador in range(0, len(selecao), 2):
         aux = nova_rota[selecao[contador]]
         nova_rota[selecao[contador]] = nova_rota[selecao[contador + 1]]
@@ -25,6 +26,8 @@ def clonar(populacao, num_clones, geracao, validade, cidades):
         val_clones = []
         af_clones = []
         rt_clones = []
+
+        num_clones += int(num_clones * celula_mae.afinidade)
 
         for contador in range(num_clones):
             id = celula_mae["id"].split("_")
@@ -57,11 +60,65 @@ def clonar(populacao, num_clones, geracao, validade, cidades):
 
 class Aiso:
 
-    def __init__(self, mapa, num_ger, num_cel, num_clones):
+    def __init__(self, mapa, num_ger, num_cel, num_clones, validade):
         self.__num_ger = num_ger
         self.__num_cel = num_cel
         self.__num_clones = num_clones
         self.__mapa = mapa
+        self.__validade = validade
+
+    def executar(self):
+
+        mapa = Mapa(self.__mapa)
+        cidades = mapa.ler_coordenadas()
+        pop = Populacao(self.__num_cel, self.__validade, cidades, 0)
+        populacao = pop.gerar_populacao()
+        mem = Memoria(populacao)
+        mem.ordenar_memoria()
+
+        for geracao in range(self.__num_ger):
+            populacao = clonar(populacao, self.__num_clones, self.__num_ger, self.__validade, cidades)
+            populacao = pd.DataFrame(populacao)
+
+            populacao.sort_values(by='fitness', inplace=True)
+            populacao.index = range(populacao.shape[0])
+
+            memoria = pd.DataFrame(mem.get_memoria())
+
+            for index, celula in populacao.iterrows():
+
+                pior_fit = memoria.fitness.max()
+
+                talvez_exista = memoria.id != celula.id
+                nao_existe = False
+
+                for possibilidade in talvez_exista:
+                    if possibilidade:
+                        nao_existe = True
+
+                if (celula.fitness < pior_fit) & nao_existe:
+                    memoria.drop([memoria.shape[0] - 1], inplace=True)
+                    memoria = memoria.append(celula, ignore_index=True)
+                    memoria.sort_values(by='fitness', inplace=True)
+                    memoria.index = range(memoria.shape[0])
+
+            memoria.validade -= 1
+            memoria_total = memoria.shape[0]
+            vivos = memoria.validade > 0
+            contagem_vivos = memoria[vivos].shape[0]
+            repor = memoria_total - contagem_vivos
+
+            # nova_pop = Populacao(repor, self.__validade, cidades, geracao)
+            # memoria.append(nova_pop, ignore_index=True)
+
+            memoria.sort_values(by='fitness', inplace= True)
+            memoria.index = range(memoria.shape[0])
+            mem.set_memoria(memoria)
+            populacao = memoria.copy()
+
+            print(populacao.iloc[0, 1])
+
+
 
 
 
