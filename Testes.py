@@ -3,25 +3,11 @@ from Mapa import Mapa
 from Populacao import Populacao
 import pandas as pd
 import numpy as np
+from AISO import Aiso
 
-mapa = Mapa("paths/bayg29.tsp")
+aiso = Aiso('paths/kroA100.tsp', num_ger=200, num_cel=5, num_clones=500, validade=10)
+aiso.executar()
 
-pop = Populacao(10, 0, mapa.ler_coordenadas(), 0)
-populacao = pop.gerar_populacao()
-
-print(populacao[["id", "fitness", "afinidade"]], end="\n\n")
-
-populacao = clonar(populacao, 5, 1, 0, mapa.ler_coordenadas())
-
-populacao.sort_values(by="fitness", inplace=True)
-print(populacao[["id", "fitness", "afinidade"]])
-
-# for index, row in populacao.iterrows():
-#     nova_rota = mutacionar(populacao.loc[index, "rota"])
-#
-#     print(populacao.loc[index, "rota"])
-#     row["rota"] = nova_rota
-#     populacao.loc[index] = row
-#     print(populacao.loc[index, "rota"])
-#     print(len(nova_rota), end="\n\n")
+# falta implementar a validade
+# restringir a quantidade de trocas
 

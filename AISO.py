@@ -8,13 +8,15 @@ import random
 
 def mutacionar(rota_celula_mae):
     nova_rota = list(rota_celula_mae)
-    num_trocas = random.randint(1, int(len(rota_celula_mae) * 0.05))
-    selecao = random.choices(rota_celula_mae, k=(2 * num_trocas))
+    # num_trocas = random.randint(1, int(len(rota_celula_mae) * 0.05))
+    selecao = random.choices(rota_celula_mae, k=2)
 
-    for contador in range(0, len(selecao), 2):
-        aux = nova_rota[selecao[contador]]
-        nova_rota[selecao[contador]] = nova_rota[selecao[contador + 1]]
-        nova_rota[selecao[contador + 1]] = aux
+    nova_rota[selecao[0]], nova_rota[selecao[1]] = nova_rota[selecao[1]], nova_rota[selecao[0]]
+
+    # for contador in range(0, len(selecao), 2):
+    #     aux = nova_rota[selecao[contador]]
+    #     nova_rota[selecao[contador]] = nova_rota[selecao[contador + 1]]
+    #     nova_rota[selecao[contador + 1]] = aux
 
     return nova_rota
 
@@ -116,7 +118,7 @@ class Aiso:
             mem.set_memoria(memoria)
             populacao = memoria.copy()
 
-            print(populacao.iloc[0, 1])
+            print(geracao, populacao.iloc[0, 1])
 
 
 
