@@ -41,7 +41,7 @@ class Populacao:
             fitness = Fitness(rota, self.__cidades)
             id = str(self.__geracao) + '_x' + '_' + str(i)
 
-            celula = Celula(id, fitness.calcular(), 0, 0, rota)
+            celula = Celula(id, fitness.calcular(), self.__validade, 0, rota)
             populacao.append(celula.get_celula())
 
         populacao = pd.DataFrame(populacao)

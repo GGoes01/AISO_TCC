@@ -8,13 +8,15 @@ import random
 
 def mutacionar(rota_celula_mae):
     nova_rota = list(rota_celula_mae)
-    num_trocas = random.randint(1, int(len(rota_celula_mae) * 0.05))
-    selecao = random.choices(rota_celula_mae, k=(2 * num_trocas))
+    # num_trocas = random.randint(1, int(len(rota_celula_mae) * 0.05))
+    selecao = random.choices(rota_celula_mae, k=2)
 
-    for contador in range(0, len(selecao), 2):
-        aux = nova_rota[selecao[contador]]
-        nova_rota[selecao[contador]] = nova_rota[selecao[contador + 1]]
-        nova_rota[selecao[contador + 1]] = aux
+    nova_rota[selecao[0]], nova_rota[selecao[1]] = nova_rota[selecao[1]], nova_rota[selecao[0]]
+
+    # for contador in range(0, len(selecao), 2):
+    #     aux = nova_rota[selecao[contador]]
+    #     nova_rota[selecao[contador]] = nova_rota[selecao[contador + 1]]
+    #     nova_rota[selecao[contador + 1]] = aux
 
     return nova_rota
 
@@ -47,7 +49,8 @@ def clonar(populacao, num_clones, geracao, validade, cidades):
 
             af_clones.append(0)
 
-        clones = {'id': id_clones, 'fitness': fit_clones, 'validade': val_clones, 'afinidade': af_clones, 'rota': rt_clones}
+        clones = {'id': id_clones, 'fitness': fit_clones, 'validade': val_clones, 'afinidade': af_clones,
+                  'rota': rt_clones}
         clones = pd.DataFrame(clones)
 
         populacao = populacao.append(clones)
@@ -77,46 +80,51 @@ class Aiso:
         mem.ordenar_memoria()
 
         for geracao in range(self.__num_ger):
-            populacao = clonar(populacao, self.__num_clones, self.__num_ger, self.__validade, cidades)
+            # Clona a população de acordo com a quantidade estipulada de clones
+            populacao = clonar(populacao, self.__num_clones, geracao, self.__validade, cidades)
             populacao = pd.DataFrame(populacao)
 
+            # Ordena os valores da população de acordo com o 'fitness'
             populacao.sort_values(by='fitness', inplace=True)
             populacao.index = range(populacao.shape[0])
 
+            # Cria um data set temporário para a memória
             memoria = pd.DataFrame(mem.get_memoria())
 
             for index, celula in populacao.iterrows():
 
+                # Armazena o pior valor de 'fitness'
                 pior_fit = memoria.fitness.max()
 
-                talvez_exista = memoria.id != celula.id
-                nao_existe = False
+                # Verifica quais células já estão presentes na memória
+                talvez_exista = memoria.fitness == celula.fitness
+                existe = False
 
                 for possibilidade in talvez_exista:
                     if possibilidade:
-                        nao_existe = True
+                        existe = True
 
-                if (celula.fitness < pior_fit) & nao_existe:
+                # Armazena somente as células que não estão presentes na memória e possuem um 'fitness' melhor do que o
+                # pior já armazenado
+                if (celula.fitness < pior_fit) and (not existe):
                     memoria.drop([memoria.shape[0] - 1], inplace=True)
                     memoria = memoria.append(celula, ignore_index=True)
                     memoria.sort_values(by='fitness', inplace=True)
                     memoria.index = range(memoria.shape[0])
 
-            memoria.validade -= 1
-            memoria_total = memoria.shape[0]
-            vivos = memoria.validade > 0
-            contagem_vivos = memoria[vivos].shape[0]
-            repor = memoria_total - contagem_vivos
+            # Define todas as célula com validade menor e igual a zero como mortas
+            # memoria.validade -= 1
+            # mortos = memoria.validade <= 0
+            # # fitness_mortos = memoria.fitness[mortos]
+            # memoria.fitness[mortos] = 200000
 
-            # nova_pop = Populacao(repor, self.__validade, cidades, geracao)
-            # memoria.append(nova_pop, ignore_index=True)
-
-            memoria.sort_values(by='fitness', inplace= True)
+            memoria.sort_values(by='fitness', inplace=True)
             memoria.index = range(memoria.shape[0])
             mem.set_memoria(memoria)
+
             populacao = memoria.copy()
 
-            print(populacao.iloc[0, 1])
+            print(f'### {geracao} ###\n{populacao.loc[0:2, ["id", "fitness", "validade"]]}')
 
 
 
