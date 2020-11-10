@@ -8,15 +8,8 @@ import random
 
 def mutacionar(rota_celula_mae):
     nova_rota = list(rota_celula_mae)
-    # num_trocas = random.randint(1, int(len(rota_celula_mae) * 0.05))
     selecao = random.choices(rota_celula_mae, k=2)
-
     nova_rota[selecao[0]], nova_rota[selecao[1]] = nova_rota[selecao[1]], nova_rota[selecao[0]]
-
-    # for contador in range(0, len(selecao), 2):
-    #     aux = nova_rota[selecao[contador]]
-    #     nova_rota[selecao[contador]] = nova_rota[selecao[contador + 1]]
-    #     nova_rota[selecao[contador + 1]] = aux
 
     return nova_rota
 
@@ -29,9 +22,10 @@ def clonar(populacao, num_clones, geracao, validade, cidades):
         af_clones = []
         rt_clones = []
 
-        num_clones += int(num_clones * celula_mae.afinidade)
+        bonus = num_clones * celula_mae.afinidade
+        total_clones = num_clones + bonus
 
-        for contador in range(num_clones):
+        for contador in range(int(total_clones)):
             id = celula_mae["id"].split("_")
             id[0] = str(geracao)
             id[1] = id[2]
@@ -76,7 +70,7 @@ class Aiso:
         cidades = mapa.ler_coordenadas()
         pop = Populacao(self.__num_cel, self.__validade, cidades, 0)
         populacao = pop.gerar_populacao()
-        mem = Memoria(populacao)
+        mem = Memoria(populacao.copy())
         mem.ordenar_memoria()
 
         for geracao in range(self.__num_ger):
@@ -112,21 +106,16 @@ class Aiso:
                     memoria.sort_values(by='fitness', inplace=True)
                     memoria.index = range(memoria.shape[0])
 
-            # Define todas as célula com validade menor e igual a zero como mortas
-            # memoria.validade -= 1
-            # mortos = memoria.validade <= 0
-            # # fitness_mortos = memoria.fitness[mortos]
-            # memoria.fitness[mortos] = 200000
-
-            memoria.sort_values(by='fitness', inplace=True)
-            memoria.index = range(memoria.shape[0])
-            mem.set_memoria(memoria)
+            memoria.validade -= 1
+            for index, row in memoria.iterrows():
+                if row.validade < 0:
+                    memoria.loc[index, 'fitness'] = 100000
 
             populacao = memoria.copy()
+            populacao.sort_values(by='fitness', inplace=True)
+            populacao.index = range(populacao.shape[0])
+            mem.set_memoria(memoria.copy())
+            mem.ordenar_memoria()
 
-            print(f'### {geracao} ###\n{populacao.loc[0:2, ["id", "fitness", "validade"]]}')
-
-
-
-
+            print(f'\n### {geracao} ###\n{populacao.loc[:, ["id", "fitness", "validade"]]}')
 
