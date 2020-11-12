@@ -1,11 +1,19 @@
 from AISO import Aiso
+import matplotlib.pyplot as plt
 
+<<<<<<< Updated upstream
 aiso = Aiso('paths/kroA100.tsp', num_ger=500, num_cel=10, num_clones=150, validade=3)
 aiso.executar()
+=======
+aiso = Aiso('paths/kroA100.tsp', num_ger=100, num_cel=10, num_clones=200, validade=3)
+resultados = aiso.executar()
+>>>>>>> Stashed changes
 
-# Falta corrigir a validade
-# Falta comentar TUDO
+plt.plot(resultados.index, resultados.melhores)
+plt.scatter(resultados.index, resultados.melhores)
+plt.show()
 
+<<<<<<< Updated upstream
 '''
 250, 5, 100 - 37948.021
 250, 5, 100 - 43293.418
@@ -17,3 +25,6 @@ aiso.executar()
 500, 5, 75 - 36201.949
 250, 3, 75 - 42407.352
 '''
+=======
+# Implementar gráficos
+>>>>>>> Stashed changes
