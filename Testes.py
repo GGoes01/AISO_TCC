@@ -1,30 +1,49 @@
 from AISO import Aiso
 import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from datetime import datetime
 
-<<<<<<< Updated upstream
-aiso = Aiso('paths/kroA100.tsp', num_ger=500, num_cel=10, num_clones=150, validade=3)
-aiso.executar()
-=======
-aiso = Aiso('paths/kroA100.tsp', num_ger=100, num_cel=10, num_clones=200, validade=3)
-resultados = aiso.executar()
->>>>>>> Stashed changes
+resultados = pd.DataFrame({'melhores': [], 'piores': []})
+num_execucoes = 1
 
-plt.plot(resultados.index, resultados.melhores)
-plt.scatter(resultados.index, resultados.melhores)
+for execucao in range(num_execucoes):
+    aiso = Aiso('paths/kroA100.tsp', num_ger=20, num_cel=10, num_clones=10, validade=3)
+    if resultados.shape[0] == 0:
+        resultados = aiso.executar().copy()
+
+    else:
+        resultados += aiso.executar().copy()
+
+resultados /= num_execucoes
+geracao = [i for i in range(resultados.shape[0])]
+
+# palette = ['#4AAD36', '#BD2F2D', '#C79E3A', '#3396C4', '#9224BD']
+
+paletteA = ['#4AAD36']
+paletteB = ['#BD2F2D']
+
+sns.set_style("darkgrid", {"axes.facecolor": ".9"})
+sns.set_context("poster", font_scale=0.5)
+plt.figure(figsize=(20, 15))
+
+sns.set_palette(paletteA)
+grafico = plt.subplot(1, 2, 1)
+sns.lineplot(x=geracao, y='melhores', data=resultados)
+plt.title('Melhores Resultados')
+plt.ylabel('Fitness')
+plt.xlabel('Geração')
+
+sns.set_palette(paletteB)
+plt.subplot(1, 2, 2)
+sns.lineplot(x=geracao, y='piores', data=resultados)
+plt.title('Piores Resultados')
+plt.ylabel('Fitness')
+plt.xlabel('Geração')
+
+arquivo = str(datetime.now()).replace(' ', '_').replace(':', '').split('.')[0]
+arquivo = 'resultados/' + arquivo + '.png'
+plt.savefig(fname=arquivo, format='png')
 plt.show()
 
-<<<<<<< Updated upstream
-'''
-250, 5, 100 - 37948.021
-250, 5, 100 - 43293.418
-250, 5, 125 - 44819.489
-250, 5, 75 - 39216.513
-250, 5, 75 - 40728.226
-250, 5, 75 - 41073.638
-250, 5, 75 - 42082.060
-500, 5, 75 - 36201.949
-250, 3, 75 - 42407.352
-'''
-=======
-# Implementar gráficos
->>>>>>> Stashed changes
+# É melhor separar os gráficos

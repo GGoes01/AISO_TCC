@@ -107,12 +107,9 @@ class Aiso:
                     memoria.sort_values(by='fitness', inplace=True)
                     memoria.index = range(memoria.shape[0])
 
-<<<<<<< Updated upstream
-=======
             resultados = resultados.append({'melhores': memoria.fitness.min().copy(),
                                             'piores': populacao.fitness.max().copy()}, ignore_index=True)
 
->>>>>>> Stashed changes
             memoria.validade -= 1
             for index, row in memoria.iterrows():
                 if row.validade < 0:
@@ -124,11 +121,7 @@ class Aiso:
             mem.set_memoria(memoria.copy())
             mem.ordenar_memoria()
 
-<<<<<<< Updated upstream
-            print(f'\n### {geracao} ###\n{populacao.loc[:, ["id", "fitness", "validade"]]}')
-=======
             print(f'\n### {geracao} ###\n{populacao.loc[0, "fitness"]}')
 
         return resultados
->>>>>>> Stashed changes
 
