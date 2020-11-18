@@ -57,12 +57,13 @@ def clonar(populacao, num_clones, geracao, validade, cidades):
 
 class Aiso:
 
-    def __init__(self, mapa, num_ger, num_cel, num_clones, validade):
+    def __init__(self, mapa, num_ger, num_cel, num_clones, validade, execucao=1):
         self.__num_ger = num_ger
         self.__num_cel = num_cel
         self.__num_clones = num_clones
         self.__mapa = mapa
         self.__validade = validade
+        self.__execucao = execucao
 
     def executar(self):
 
@@ -121,7 +122,7 @@ class Aiso:
             mem.set_memoria(memoria.copy())
             mem.ordenar_memoria()
 
-            print(f'\n### {geracao} ###\n{populacao.loc[0, "fitness"]}')
+            print(f'\n### {geracao} - {self.__execucao} ###\n{populacao.loc[0, "fitness"]}')
 
         return resultados
 
