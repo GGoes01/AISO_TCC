@@ -15,6 +15,7 @@ class Memoria:
 
     def ordenar_memoria(self):
         self.__memoria.sort_values(by='fitness', inplace=True)
+        self.__memoria.index = range(self.__memoria.shape[0])
 
     def exportar_memoria(self, mapa):
         now = datetime.now()
