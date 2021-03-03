@@ -57,25 +57,31 @@ def clonar(populacao, num_clones, geracao, validade, cidades):
 
 class Aiso:
 
-    def __init__(self, mapa, num_ger, num_cel, num_clones, validade, execucao=1):
+    def __init__(self, mapa, num_ger, tamanho_mem, num_cel, num_clones, validade, execucao=1):
+        self.__mapa = mapa
         self.__num_ger = num_ger
+        self.__tamanho_mem = tamanho_mem
         self.__num_cel = num_cel
         self.__num_clones = num_clones
-        self.__mapa = mapa
         self.__validade = validade
         self.__execucao = execucao
 
     def executar(self):
 
-        mapa = Mapa(self.__mapa)
-        cidades = mapa.ler_coordenadas()
-        pop = Populacao(self.__num_cel, self.__validade, cidades, 0)
-        populacao = pop.gerar_populacao()
-        mem = Memoria(populacao.copy())
-        mem.ordenar_memoria()
-        resultados = pd.DataFrame({'melhores': [], 'piores': []})
+        resultados = pd.DataFrame({'melhores': [], 'piores': []})  # Cria o DF para armazenar os resultados
 
-        for geracao in range(self.__num_ger):
+        mapa = Mapa(self.__mapa)  # Instancia e lê as coordenadas do mapa escolhido
+        cidades = mapa.ler_coordenadas()
+
+        pop = Populacao(self.__num_cel, self.__validade, cidades, 0)  # Instancia uma nova população
+        populacao = pop.gerar_populacao()  # Gera o DF da população
+        populacao.sort_values(by='fitness', inplace=True)  # Ordena a população de acordo com o fitness
+        populacao.index = range(populacao.shape[0])  # Ajusta o índice da população
+        mem = Memoria(populacao[:self.__tamanho_mem].copy())  # Armazena na memória uma parcela da população
+        mem.ordenar_memoria()  # Ordena a memória
+
+        for geracao in range(self.__num_ger):  # Para cada geração:
+
             # Clona a população de acordo com a quantidade estipulada de clones
             populacao = clonar(populacao, self.__num_clones, geracao, self.__validade, cidades)
             populacao = pd.DataFrame(populacao)
@@ -87,12 +93,13 @@ class Aiso:
             # Cria um data set temporário para a memória
             memoria = pd.DataFrame(mem.get_memoria())
 
+            # Verifica uma a uma as células presentes na memória
             for index, celula in populacao.iterrows():
 
-                # Armazena o pior valor de 'fitness'
+                # Armazena o pior valor de fitness
                 pior_fit = memoria.fitness.max()
 
-                # Verifica quais células já estão presentes na memória
+                # Verifica quais células já estão presentes na memória de acordo com o fitness
                 talvez_exista = memoria.fitness == celula.fitness
                 existe = False
 
@@ -103,22 +110,29 @@ class Aiso:
                 # Armazena somente as células que não estão presentes na memória e possuem um 'fitness' melhor do que o
                 # pior já armazenado
                 if (celula.fitness < pior_fit) and (not existe):
-                    memoria.drop([memoria.shape[0] - 1], inplace=True)
-                    memoria = memoria.append(celula, ignore_index=True)
-                    memoria.sort_values(by='fitness', inplace=True)
-                    memoria.index = range(memoria.shape[0])
+                    memoria.drop([memoria.shape[0] - 1], inplace=True)  # Remove a última célula
+                    memoria = memoria.append(celula, ignore_index=True)  # Adiciona a célula nova
+                    memoria.sort_values(by='fitness', inplace=True)  # Ordena a população de acordo com o fitness
+                    memoria.index = range(memoria.shape[0])  # Ajusta o índice da população
 
+            # Armazena o melhor fitness da memória e o pior fitness da população
             resultados = resultados.append({'melhores': memoria.fitness.min().copy(),
                                             'piores': populacao.fitness.max().copy()}, ignore_index=True)
 
+            # Diminui a validade das células
             memoria.validade -= 1
+
+            # Verifica uma a uma as células presentes na memória
             for index, row in memoria.iterrows():
-                if row.validade < 0:
-                    memoria.loc[index, 'fitness'] = 100000
+                if row.validade < 0:  # Modifica o fitness se a validade for menor que zero
+                    memoria.loc[index, 'fitness'] += row.fitness * 0.5
 
             populacao = memoria.copy()
+            populacao = clonar(populacao, int(self.__num_cel/self.__tamanho_mem - 1),
+                               geracao, self.__validade, cidades)
             populacao.sort_values(by='fitness', inplace=True)
             populacao.index = range(populacao.shape[0])
+
             mem.set_memoria(memoria.copy())
             mem.ordenar_memoria()
 
